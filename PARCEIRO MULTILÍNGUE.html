@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARCEIRO MULTILÍNGUE - Espanhol, Italiano, Francês, Japonês</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        'dark-bg': '#181818'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .loading-dots:after {
+            content: '';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%, 20% { content: ''; }
+            40% { content: '.'; }
+            60% { content: '..'; }
+            80%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-dark-bg text-gray-900 dark:text-white min-h-screen transition-colors">
+<div class="container mx-auto px-4 py-6 max-w-4xl">
+    <!-- HEADER -->
+    <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold mb-2 text-primary">🌍 PARCEIRO MULTILÍNGUE</h1>
+        <p class="text-gray-600 dark:text-gray-300">
+            Pratique conversação com diálogos interativos em <strong>Espanhol, Italiano, Francês e Japonês</strong>
+        </p>
+    </div>
+
+    <!-- SELETOR DE IDIOMA -->
+    <div class="mb-6 bg-gray-50 dark:bg-gray-800 rounded-lg p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <div class="text-sm font-medium mb-1">Idioma que você quer treinar:</div>
+            <div id="currentLanguageBadge" class="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold">
+                🇪🇸 Espanhol (Espanha)
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <label for="languageSelect" class="text-sm">Selecionar idioma:</label>
+            <select id="languageSelect"
+                    class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="es">🇪🇸 Espanhol (Espanha)</option>
+                <option value="it">🇮🇹 Italiano</option>
+                <option value="fr">🇫🇷 Francês</option>
+                <option value="ja">🇯🇵 Japonês</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="step1" class="mb-8">
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">1</span>
+                Adicionar Diálogo
+            </h2>
+            <div class="space-y-4">
+                <div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                    <input type="file" id="fileInput" accept=".txt" class="hidden">
+                    <button onclick="document.getElementById('fileInput').click()"
+                            class="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg transition-colors">
+                        📁 Upload Arquivo
+                    </button>
+                    <p class="text-gray-500 dark:text-gray-400 mt-2">ou</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-2">Cole seu diálogo aqui (no idioma escolhido):</label>
+                    <textarea id="dialogInput"
+                              class="w-full h-32 text-base px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+                    <p id="exampleHint" class="mt-1 text-xs text-gray-500 dark:text-gray-400 italic"></p>
+                </div>
+
+                <button onclick="parseDialog()"
+                        class="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-medium transition-colors">
+                    Analisar Diálogo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" class="mb-8 hidden">
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <span class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">2</span>
+                Configuração da Conversa
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- MODO -->
+                <div>
+                    <label class="block text-sm font-medium mb-3">Modo de Prática:</label>
+                    <div class="space-y-3">
+                        <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <input type="radio" name="mode" value="conversation" checked class="mr-3">
+                            <div>
+                                <div class="font-medium">💬 Conversação</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    Você escolhe um personagem e conversa com o app
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <input type="radio" name="mode" value="listen" class="mr-3">
+                            <div>
+                                <div class="font-medium">🎧 Escutar</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">
+                                    O app fala todos os personagens para você apenas escutar
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- PERSONAGEM -->
+                <div id="characterSelection">
+                    <label class="block text-sm font-medium mb-3">Escolha seu personagem:</label>
+                    <div id="characterList" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- TRADUÇÃO -->
+            <div class="mt-6">
+                <div class="flex items-center justify-between mb-3">
+                    <label class="block text-sm font-medium">Tradução:</label>
+                    <div class="space-x-2">
+                        <button id="translateBtn" onclick="translateDialog()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                            🌍 Traduzir para Português
+                        </button>
+                        <button id="toggleTranslationBtn" onclick="toggleTranslation()"
+                                class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm transition-colors hidden">
+                            🔄 Ocultar Tradução
+                        </button>
+                    </div>
+                </div>
+
+                <div id="translationStatus" class="hidden mt-2">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
+                        <div id="translationStatusText" class="text-sm text-blue-700 dark:text-blue-300"></div>
+                    </div>
+                </div>
+
+                <div id="translatedDialog" class="hidden mt-2">
+                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-3">
+                        <h3 class="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Diálogo Traduzido:</h3>
+                        <div id="translatedText" class="text-sm text-yellow-700 dark:text-yellow-300 space-y-1 max-h-40 overflow-y-auto"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VOZ (apenas rótulo, a voz real depende do idioma) -->
+            <div class="mt-6">
+                <label class="block text-sm font-medium mb-1">Voz do App:</label>
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    A voz será escolhida automaticamente de acordo com o idioma selecionado (Espanhol, Italiano, Francês ou Japonês).
+                </p>
+            </div>
+
+            <button onclick="startPractice()"
+                    class="w-full mt-6 bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-medium transition-colors">
+                Começar Prática
+            </button>
+        </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" class="mb-8 hidden">
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <span class="bg-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm mr-3">3</span>
+                    <span id="practiceTitle">Prática de Conversação</span>
+                </h2>
+                <button onclick="resetApp()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    🔄 Reiniciar
+                </button>
+            </div>
+
+            <div id="conversationArea" class="mb-6">
+                <div id="dialogHistory" class="space-y-4 mb-6 max-h-96 overflow-y-auto"></div>
+
+                <!-- VEZ DO USUÁRIO -->
+                <div id="currentTurn" class="hidden">
+                    <div class="bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 p-4 mb-4">
+                        <div class="font-medium text-blue-800 dark:text-blue-300">Sua vez de falar:</div>
+                        <div id="currentLine" class="text-blue-700 dark:text-blue-200 mt-1"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div class="flex items-center space-x-3">
+                            <button id="listenBtn" onclick="startListening()"
+                                    class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg transition-colors">
+                                🎤 Começar a Falar
+                            </button>
+                            <button onclick="speakUserLine()"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                🔊 Ouvir Exemplo
+                            </button>
+                            <button onclick="skipTurn()"
+                                    class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                ⏭️ Pular
+                            </button>
+                        </div>
+
+                        <div id="speechFeedback" class="hidden">
+                            <div id="recognizedText" class="bg-gray-100 dark:bg-gray-700 p-3 rounded border text-sm"></div>
+                            <div class="flex items-center space-x-2 mt-2">
+                                <button onclick="confirmSpeech()"
+                                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-1 rounded text-sm">
+                                    ✓ Continuar
+                                </button>
+                                <button onclick="retrySpeech()"
+                                        class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-1 rounded text-sm">
+                                    🔄 Tentar Novamente
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODO ESCUTAR -->
+                <div id="listenControls" class="hidden">
+                    <div class="flex justify-center space-x-4">
+                        <button onclick="playFullDialog()"
+                                class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors">
+                            ▶️ Reproduzir Diálogo Completo
+                        </button>
+                        <button onclick="playCurrentLine()"
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors">
+                            🔊 Repetir Frase Atual
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROGRESSO -->
+            <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+                <div id="progressBar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="text-sm text-gray-600 dark:text-gray-400 text-center">
+                <span id="progressText">0 de 0 falas</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="mt-6 pb-4 text-center text-xs text-gray-500 dark:text-gray-400">
+    © <span id="year"></span> Copyright crenatojls
+</footer>
+
+<script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // CONFIGURAÇÃO DE IDIOMAS
+    const LANGS = {
+        es: {
+            key: 'es',
+            name: 'Espanhol (Espanha)',
+            flag: '🇪🇸',
+            ttsLang: 'es-ES',
+            srLang: 'es-ES',
+            sl: 'es',
+            pair: 'es|pt',
+            example: 'Exemplo:\nLucía: Hola, ¿qué tal?\nCarlos: Muy bien, gracias. ¿Y tú?'
+        },
+        it: {
+            key: 'it',
+            name: 'Italiano',
+            flag: '🇮🇹',
+            ttsLang: 'it-IT',
+            srLang: 'it-IT',
+            sl: 'it',
+            pair: 'it|pt',
+            example: 'Exemplo:\nGiulia: Ciao, come stai?\nMarco: Sto bene, grazie. E tu?'
+        },
+        fr: {
+            key: 'fr',
+            name: 'Francês',
+            flag: '🇫🇷',
+            ttsLang: 'fr-FR',
+            srLang: 'fr-FR',
+            sl: 'fr',
+            pair: 'fr|pt',
+            example: 'Exemplo:\nMarie: Bonjour, ça va ?\nPierre: Ça va bien, merci. Et toi ?'
+        },
+        ja: {
+            key: 'ja',
+            name: 'Japonês',
+            flag: '🇯🇵',
+            ttsLang: 'ja-JP',
+            srLang: 'ja-JP',
+            sl: 'ja',
+            pair: 'ja|pt',
+            example: 'Exemplo:\nゆき: こんにちは、元気ですか？\nたろう: 元気だよ。君は？'
+        }
+    };
+
+    let currentLangKey = 'es';
+
+    function updateLanguageUI() {
+        const lang = LANGS[currentLangKey];
+        const badge = document.getElementById('currentLanguageBadge');
+        const hint = document.getElementById('exampleHint');
+        if (badge) badge.textContent = `${lang.flag} ${lang.name}`;
+        if (hint) hint.textContent = lang.example;
+    }
+
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
+        currentLangKey = e.target.value;
+        updateLanguageUI();
+    });
+
+    updateLanguageUI();
+
+    // ESTADO GLOBAL
+    let dialogData = [];
+    let translatedData = [];
+    let characters = [];
+    let currentLineIndex = 0;
+    let userCharacter = '';
+    let practiceMode = 'conversation';
+    let recognition;
+    let isListening = false;
+    let showTranslation = true;
+
+    function showAlert(msg) {
+        alert(msg);
+    }
+
+    // SUPORTE A RECONHECIMENTO DE VOZ
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const supportsSpeechRecognition = !!SR;
+
+    window.addEventListener('load', () => {
+        const listenBtn = document.getElementById('listenBtn');
+        if (!listenBtn) return;
+        if (!supportsSpeechRecognition) {
+            listenBtn.disabled = true;
+            listenBtn.classList.add('opacity-60', 'cursor-not-allowed');
+            listenBtn.textContent = '🎤 Reconhecimento de voz não suportado neste navegador';
+        }
+    });
+
+    // UPLOAD
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                document.getElementById('dialogInput').value = ev.target.result;
+            };
+            reader.readAsText(file);
+        }
+    });
+
+    // PARSE DIÁLOGO
+    function parseDialog() {
+        const text = document.getElementById('dialogInput').value.trim();
+        if (!text) {
+            showAlert('Por favor, adicione um diálogo primeiro.');
+            return;
+        }
+
+        const lines = text.split('\n').filter(line => line.trim());
+        dialogData = [];
+        translatedData = [];
+        characters = new Set();
+
+        for (let line of lines) {
+            const match = line.match(/^([^:]+):\s*(.+)$/);
+            if (match) {
+                const character = match[1].trim();
+                const dialog = match[2].trim();
+                characters.add(character);
+                dialogData.push({ character, dialog });
+            }
+        }
+
+        if (!dialogData.length) {
+            showAlert('Use o formato "Personagem: fala" em cada linha.');
+            return;
+        }
+
+        characters = Array.from(characters);
+        setupCharacterSelection();
+        showStep(2);
+
+        document.getElementById('translatedDialog').classList.add('hidden');
+        document.getElementById('toggleTranslationBtn').classList.add('hidden');
+        document.getElementById('translationStatus').classList.add('hidden');
+    }
+
+    function setupCharacterSelection() {
+        const list = document.getElementById('characterList');
+        list.innerHTML = '';
+        characters.forEach((c, i) => {
+            const label = document.createElement('label');
+            label.className = 'flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700';
+            label.innerHTML = `
+                <input type="radio" name="character" value="${c}" ${i === 0 ? 'checked' : ''} class="mr-3">
+                <span class="font-medium">${c}</span>
+            `;
+            list.appendChild(label);
+        });
+    }
+
+    document.addEventListener('change', e => {
+        if (e.target.name === 'mode') {
+            practiceMode = e.target.value;
+            document.getElementById('characterSelection').style.display =
+                practiceMode === 'conversation' ? 'block' : 'none';
+        }
+    });
+
+    // TRADUÇÃO
+    async function translateDialog() {
+        if (!dialogData.length) {
+            showAlert('Adicione e analise um diálogo antes de traduzir.');
+            return;
+        }
+
+        const btn = document.getElementById('translateBtn');
+        const statusDiv = document.getElementById('translationStatus');
+        const statusText = document.getElementById('translationStatusText');
+
+        btn.textContent = 'Traduzindo...';
+        btn.disabled = true;
+        statusDiv.classList.remove('hidden');
+        statusText.textContent = 'Iniciando tradução...';
+        statusText.className = 'text-sm text-blue-700 dark:text-blue-300 loading-dots';
+
+        try {
+            let successCount = 0;
+            let failCount = 0;
+            translatedData = [];
+
+            for (let i = 0; i < dialogData.length; i++) {
+                const line = dialogData[i];
+                statusText.textContent = `Traduzindo ${i + 1} de ${dialogData.length} linhas...`;
+
+                try {
+                    const translatedText = await translateWithFallback(line.dialog);
+                    if (translatedText && translatedText !== line.dialog) {
+                        successCount++;
+                        translatedData.push({ character: line.character, dialog: translatedText });
+                    } else {
+                        failCount++;
+                        translatedData.push({ character: line.character, dialog: line.dialog + " [Não traduzido]" });
+                    }
+                } catch (error) {
+                    failCount++;
+                    translatedData.push({ character: line.character, dialog: line.dialog + " [Erro na tradução]" });
+                }
+
+                if (i < dialogData.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+            }
+
+            displayTranslatedDialog();
+            document.getElementById('translatedDialog').classList.remove('hidden');
+            const toggleBtn = document.getElementById('toggleTranslationBtn');
+            toggleBtn.classList.remove('hidden');
+            toggleBtn.textContent = '🔄 Ocultar Tradução';
+            showTranslation = true;
+
+            statusText.className = 'text-sm text-green-700 dark:text-green-300';
+            if (failCount === 0) {
+                statusText.textContent = `✅ Tradução concluída! Todas as ${successCount} linhas foram traduzidas com sucesso.`;
+            } else {
+                statusText.textContent = `⚠️ Tradução parcial: ${successCount} linhas traduzidas, ${failCount} falhas.`;
+            }
+        } catch (error) {
+            console.error('Erro na tradução:', error);
+            statusText.className = 'text-sm text-red-700 dark:text-red-300';
+            statusText.textContent = '❌ Erro na tradução. Verifique sua conexão e tente novamente.';
+        } finally {
+            btn.textContent = '🌍 Traduzir para Português';
+            btn.disabled = false;
+        }
+    }
+
+    async function translateWithFallback(text) {
+        const lang = LANGS[currentLangKey];
+
+        // Google Translate
+        try {
+            const translated = await translateGoogleImproved(text, lang.sl);
+            if (translated && translated !== text) return translated;
+        } catch (e) {
+            console.warn('Google falhou:', e);
+        }
+
+        // MyMemory
+        try {
+            const translated = await translateMyMemory(text, lang.pair);
+            if (translated && translated !== text) return translated;
+        } catch (e) {
+            console.warn('MyMemory falhou:', e);
+        }
+
+        return null;
+    }
+
+    async function translateGoogleImproved(text, sl) {
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=pt&dt=t&q=${encodeURIComponent(text)}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        let full = '';
+        if (json && json[0]) {
+            for (const item of json[0]) {
+                if (item[0]) full += item[0];
+            }
+        }
+        return full || null;
+    }
+
+    async function translateMyMemory(text, pair) {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${pair}`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const translated = json.responseData?.translatedText;
+        if (translated && !translated.includes('MYMEMORY WARNING')) return translated;
+        return null;
+    }
+
+    function displayTranslatedDialog() {
+        const container = document.getElementById('translatedText');
+        container.innerHTML = '';
+        translatedData.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'border-b border-yellow-200 dark:border-yellow-700 pb-1 mb-1 last:border-b-0 last:mb-0';
+            const isTranslated = !item.dialog.includes('[Não traduzido]') && !item.dialog.includes('[Erro na tradução]');
+            const textClass = isTranslated ? 'text-yellow-700 dark:text-yellow-300' : 'text-red-600 dark:text-red-400 italic';
+            div.innerHTML = `<strong>${item.character}:</strong> <span class="${textClass}">${item.dialog}</span>`;
+            container.appendChild(div);
+        });
+    }
+
+    function toggleTranslation() {
+        showTranslation = !showTranslation;
+        const container = document.getElementById('translatedDialog');
+        const btn = document.getElementById('toggleTranslationBtn');
+        if (showTranslation) {
+            container.classList.remove('hidden');
+            btn.textContent = '🔄 Ocultar Tradução';
+        } else {
+            container.classList.add('hidden');
+            btn.textContent = '🔄 Mostrar Tradução';
+        }
+    }
+
+    // PRÁTICA
+    function startPractice() {
+        const mode = document.querySelector('input[name="mode"]:checked');
+        practiceMode = mode ? mode.value : 'conversation';
+
+        if (practiceMode === 'conversation') {
+            const charRadio = document.querySelector('input[name="character"]:checked');
+            if (!charRadio) {
+                showAlert('Escolha um personagem.');
+                return;
+            }
+            userCharacter = charRadio.value;
+        }
+
+        currentLineIndex = 0;
+        document.getElementById('dialogHistory').innerHTML = '';
+        updateProgress();
+        const lang = LANGS[currentLangKey];
+        document.getElementById('practiceTitle').textContent =
+            practiceMode === 'conversation'
+                ? `Você é: ${userCharacter} (${lang.flag} ${lang.name})`
+                : `Escutar diálogo em ${lang.flag} ${lang.name}`;
+
+        showStep(3);
+
+        if (practiceMode === 'listen') {
+            document.getElementById('currentTurn').classList.add('hidden');
+            document.getElementById('listenControls').classList.remove('hidden');
+        } else {
+            document.getElementById('listenControls').classList.add('hidden');
+            document.getElementById('currentTurn').classList.remove('hidden');
+            showNextTurn();
+        }
+    }
+
+    function showNextTurn() {
+        if (currentLineIndex >= dialogData.length) {
+            showCompletionMessage();
+            return;
+        }
+
+        const line = dialogData[currentLineIndex];
+        const isUserTurn = (practiceMode === 'conversation') && (line.character === userCharacter);
+
+        if (isUserTurn) {
+            document.getElementById('currentLine').textContent = line.dialog;
+            document.getElementById('speechFeedback').classList.add('hidden');
+            document.getElementById('currentTurn').classList.remove('hidden');
+        } else {
+            document.getElementById('currentTurn').classList.add('hidden');
+            addDialogLine(line.character, line.dialog, currentLineIndex);
+            speakText(line.dialog).then(() => {
+                currentLineIndex++;
+                updateProgress();
+                setTimeout(showNextTurn, 500);
+            });
+        }
+    }
+
+    function addDialogLine(character, text, index) {
+        const history = document.getElementById('dialogHistory');
+        const translation = translatedData[index]?.dialog || null;
+        const isTranslated = translation && !translation.includes('[Não traduzido]') && !translation.includes('[Erro na tradução]');
+
+        const div = document.createElement('div');
+        div.className = `fade-in p-3 rounded-lg ${
+            character === userCharacter
+                ? 'bg-green-100 dark:bg-green-900/30 border-l-4 border-green-500'
+                : 'bg-gray-100 dark:bg-gray-700 border-l-4 border-gray-500'
+        }`;
+
+        let translationHtml = '';
+        if (translation && showTranslation) {
+            const translationClass = isTranslated ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400 italic';
+            translationHtml = `<div class="mt-1 text-xs ${translationClass}">${translation}</div>`;
+        }
+
+        div.innerHTML = `
+            <div class="font-medium">${character}:</div>
+            <div class="mt-1">${text}</div>
+            ${translationHtml}
+        `;
+        history.appendChild(div);
+        history.scrollTop = history.scrollHeight;
+    }
+
+    function speakText(text) {
+        return new Promise(resolve => {
+            if (!('speechSynthesis' in window)) {
+                resolve();
+                return;
+            }
+            const lang = LANGS[currentLangKey];
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = lang.ttsLang;
+            utter.rate = 0.95;
+
+            const voices = speechSynthesis.getVoices();
+            let v = voices.find(voice => voice.lang === lang.ttsLang)
+                || voices.find(voice => voice.lang && voice.lang.startsWith(lang.ttsLang.split('-')[0]));
+            if (v) utter.voice = v;
+
+            utter.onend = () => resolve();
+            utter.onerror = () => resolve();
+            speechSynthesis.speak(utter);
+        });
+    }
+
+    // RECONHECIMENTO DE VOZ
+    function initSpeechRecognition() {
+        if (!supportsSpeechRecognition) {
+            showAlert(
+                'Seu navegador não suporta reconhecimento de voz.\n\n' +
+                'Use de preferência o Google Chrome no computador ou Android, ' +
+                'com o app aberto em HTTPS ou em localhost.'
+            );
+            return;
+        }
+        if (recognition) return;
+
+        const lang = LANGS[currentLangKey];
+        recognition = new SR();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = lang.srLang;
+
+        recognition.onstart = () => {
+            isListening = true;
+            const btn = document.getElementById('listenBtn');
+            if (btn) btn.textContent = '🎤 Ouvindo...';
+        };
+        recognition.onend = () => {
+            isListening = false;
+            const btn = document.getElementById('listenBtn');
+            if (btn && supportsSpeechRecognition) btn.textContent = '🎤 Começar a Falar';
+        };
+        recognition.onerror = (e) => {
+            console.error('Erro no reconhecimento de voz:', e.error);
+            isListening = false;
+            const btn = document.getElementById('listenBtn');
+            if (btn && supportsSpeechRecognition) btn.textContent = '🎤 Começar a Falar';
+
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+                showAlert(
+                    'Permissão para usar o microfone foi negada.\n\n' +
+                    'Ative o microfone para este site nas configurações do navegador.'
+                );
+            }
+        };
+        recognition.onresult = e => {
+            const text = e.results[0][0].transcript;
+            const recognizedDiv = document.getElementById('recognizedText');
+            const feedbackDiv = document.getElementById('speechFeedback');
+            if (recognizedDiv) recognizedDiv.textContent = text;
+            if (feedbackDiv) feedbackDiv.classList.remove('hidden');
+        };
+    }
+
+    function startListening() {
+        initSpeechRecognition();
+        if (!recognition || isListening) return;
+        recognition.start();
+    }
+
+    function confirmSpeech() {
+        const line = dialogData[currentLineIndex];
+        addDialogLine(userCharacter, line.dialog, currentLineIndex);
+        currentLineIndex++;
+        updateProgress();
+        document.getElementById('speechFeedback').classList.add('hidden');
+        showNextTurn();
+    }
+
+    function retrySpeech() {
+        document.getElementById('speechFeedback').classList.add('hidden');
+        startListening();
+    }
+
+    function skipTurn() {
+        const line = dialogData[currentLineIndex];
+        addDialogLine(userCharacter, line.dialog, currentLineIndex);
+        currentLineIndex++;
+        updateProgress();
+        document.getElementById('speechFeedback').classList.add('hidden');
+        showNextTurn();
+    }
+
+    function speakUserLine() {
+        const line = dialogData[currentLineIndex];
+        if (!line) return;
+        speakText(line.dialog);
+    }
+
+    // MODO ESCUTAR
+    function playFullDialog() {
+        let i = currentLineIndex;
+        const playNext = () => {
+            if (i >= dialogData.length) {
+                showCompletionMessage();
+                return;
+            }
+            const line = dialogData[i];
+            addDialogLine(line.character, line.dialog, i);
+            speakText(line.dialog).then(() => {
+                currentLineIndex = i + 1;
+                updateProgress();
+                i++;
+                setTimeout(playNext, 500);
+            });
+        };
+        playNext();
+    }
+
+    function playCurrentLine() {
+        if (currentLineIndex < dialogData.length) {
+            speakText(dialogData[currentLineIndex].dialog);
+        }
+    }
+
+    function updateProgress() {
+        const total = dialogData.length || 1;
+        const pct = (currentLineIndex / total) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('progressText').textContent =
+            `${currentLineIndex} de ${dialogData.length} falas`;
+    }
+
+    function showCompletionMessage() {
+        const history = document.getElementById('dialogHistory');
+        const div = document.createElement('div');
+        div.className = 'fade-in bg-green-100 dark:bg-green-900/30 border-l-4 border-green-500 p-4 text-center';
+        div.innerHTML = `
+            <div class="font-medium text-green-800 dark:text-green-300">
+                🎉 Parabéns! Você completou o diálogo!
+            </div>
+            <button onclick="resetApp()" class="mt-3 bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-lg">
+                🔄 Praticar Novamente
+            </button>
+        `;
+        history.appendChild(div);
+        document.getElementById('currentTurn').classList.add('hidden');
+        document.getElementById('listenControls').classList.add('hidden');
+    }
+
+    function resetApp() {
+        dialogData = [];
+        translatedData = [];
+        characters = [];
+        currentLineIndex = 0;
+        userCharacter = '';
+        document.getElementById('dialogInput').value = '';
+        document.getElementById('translationStatus').classList.add('hidden');
+        showStep(1);
+        updateProgress();
+    }
+
+    function showStep(n) {
+        document.getElementById('step1').classList.add('hidden');
+        document.getElementById('step2').classList.add('hidden');
+        document.getElementById('step3').classList.add('hidden');
+        document.getElementById('step' + n).classList.remove('hidden');
+    }
+
+    showStep(1);
+    speechSynthesis.getVoices();
+</script>
+</body>
+</html>
